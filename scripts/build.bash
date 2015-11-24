@@ -8,19 +8,19 @@ build() {
 
     local os="darwin freebsd linux windows"
     local arch="386 amd64 arm"
-    if [ "$2" == "dev" ]; then
+    if [ "${DEV}" == "dev" ]; then
         local os=$(go env GOOS)
         local arch=$(go env GOARCH)
     fi
 
     # Build!
-    echo "==> Building...(${arch}) for (${os})"
+    echo "==> Building ${MAIN_PACKAGE}...(${arch}) for (${os})"
     gox \
         -os="${os}" \
         -arch="${arch}" \
         -ldflags="${ldflag}"  \
-        -output="$DIR/pkg/{{.OS}}_{{.Arch}}/$1" \
-        .
+        -output="$DIR/pkg/{{.OS}}_{{.Arch}}/${BINARY_NAME}" \
+        ${MAIN_PACKAGE}
 }
 
 copy_to_path() {
@@ -46,17 +46,20 @@ main() {
     set +e
     set -o pipefail
 
-    SOURCE="${BASH_SOURCE[0]}"
-    while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
-    DIR="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
+    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     rm -rf $DIR/pkg
     mkdir -p $DIR/pkg
 
-    build $@
+    #parse args
+    BINARY_NAME=$1
+    MAIN_PACKAGE=$2
+    DEV=$3
+
+    build
     copy_to_path
 
-    if [ "$2" != "dev" ]; then
-        package $@
+    if [ "$DEV" != "dev" ]; then
+        package
     fi
 }
 

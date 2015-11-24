@@ -9,40 +9,50 @@ GOTOOLS = github.com/mitchellh/gox \
 VETARGS?=-asmdecl -atomic -bool -buildtags -copylocks -methods \
 	 -nilfunc -printf -rangeloops -shift -structtags -unsafeptr
 BINARY_NAME=$(shell basename ${PWD})
+MAIN_PACKAGE=$(CURDIR)
 
-all: format test dist
+all: format test build-dist
 
-build:
-	@bash -c "'$(CURDIR)/scripts/build.bash' $(BINARY_NAME) dev"
+build: generate
+	$(CURDIR)/scripts/build.bash $(BINARY_NAME) $(MAIN_PACKAGE) dev
+
+build-dist: check-format generate
+	$(CURDIR)/scripts/build.bash $(BINARY_NAME) $(MAIN_PACKAGE)
+
+check-format:
+	@echo "Checking format... "
+	test -z "$$(goimports -l . | grep -v vendor/ | tee /dev/stderr)"
+	@echo "Done checking format"
 
 cov:
 	gocov test ./... | gocov-html > /tmp/coverage.html
 	open /tmp/coverage.html
 
-dist: generate
-	@bash -c "'$(CURDIR)/scripts/build.bash' $(BINARY_NAME)"
+clean:
+	find . -type f -name '.DS_Store' -delete
 
 deps:
-	@echo "--> Installing build dependencies"
-	@go get -v $(GOTOOLS)
-	@gvt rebuild
+	echo "--> Installing build dependencies"
+	go get -v $(GOTOOLS)
+	gvt rebuild
 
 format: deps
-	@echo "--> Running go fmt"
-	@go fmt $(PACKAGES)
+	echo "--> Running go fmt"
+	go fmt $(PACKAGES)
 
-generate: deps
-	find . -type f -name '.DS_Store' -delete
+generate:
+	echo "--> Running generate"
 	go generate ./...
 
 test: deps
-	@echo "--> Running Tests"
-	@$(MAKE) vet
-	@ginkgo -r
+	echo "--> Running Tests"
+	$(MAKE) vet
+	ginkgo -r
 
 updatedeps: deps
-	@echo "--> Installing build dependencies"
+	@echo "--> Updating dependencies"
 	@gvt update --all
+
 vet:
 	@echo "--> Running go tool vet $(VETARGS) ."
 	@go tool vet $(VETARGS) . ; if [ $$? -eq 1 ]; then \
