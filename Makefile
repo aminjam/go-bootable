@@ -1,8 +1,6 @@
 GOTOOLS = github.com/mitchellh/gox \
 	  golang.org/x/tools/cmd/stringer \
 	  github.com/FiloSottile/gvt \
-	  github.com/onsi/ginkgo/ginkgo \
-	  github.com/onsi/gomega \
 	  github.com/axw/gocov/gocov \
 	  gopkg.in/matm/v1/gocov-html \
 	  golang.org/x/tools/cmd/vet
