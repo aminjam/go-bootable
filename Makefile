@@ -9,14 +9,12 @@ GOTOOLS = github.com/mitchellh/gox \
 VETARGS?=-asmdecl -atomic -bool -buildtags -copylocks -methods \
 	 -nilfunc -printf -rangeloops -shift -structtags -unsafeptr
 
-USED_PACKAGES=$(shell go list ./... | sort | uniq)
-INTERNAL_PACKAGES=$(shell go list ./... | grep -v vendor | sort | uniq)
-PM_PACKAGES=$(gvt list | cut -d ' ' -f 1 | sort | uniq)
+PACKAGES=$(shell go list ./... | grep -v vendor | sort | uniq)
 
 BINARY_NAME=$(shell basename ${PWD})
 MAIN_PACKAGE="."
 
-all: format test build-dist
+all: format test deps build-dist
 
 build: generate
 	@$(CURDIR)/scripts/build.bash $(BINARY_NAME) $(MAIN_PACKAGE) dev
@@ -32,25 +30,29 @@ cov:
 clean:
 	@find . -type f -name '.DS_Store' -delete
 
-deps:
-	@echo "--> Installing build dependencies"
+deps: orphan-deps
+	@echo "--> Rebuilding dependencies"
 	@go get -v $(GOTOOLS)
 	@gvt rebuild
 
 format:
 	@echo "--> Running go fmt"
-	@go fmt $(INTERNAL_PACKAGES)
+	@go fmt $(PACKAGES)
 
 generate:
 	@echo "--> Running generate"
 	@go generate ./...
 
-test: deps
+test:
 	@echo "--> Running Tests"
 	$(MAKE) vet
-	@ginkgo -r
+	@go test $(PACKAGES)
 
-updatedeps: deps
+orphan-deps:
+	@echo "--> Checking orphan dependencies"
+	@$(CURDIR)/scripts/deps.bash orphan
+
+update-deps: deps
 	@echo "--> Updating dependencies"
 	@gvt update --all
 
@@ -64,5 +66,5 @@ vet:
 		echo "and fix them if necessary before submitting the code for reviewal."; \
 		fi
 
-.PHONY: all build cov dist deps format generate test updatedeps vet
+.PHONY: all build cov dist deps format generate test orphan-deps update-deps vet
 

@@ -20,6 +20,7 @@ This is a placeholder for a base go project with opinionated Makefile.
 * `make cov`: Test coverage Report
 * `make dist`: Build all binaries for all combinatinos of (amd64 arm 386) Arch and (darwin freebsd linux windows) OS
 * `make deps`: Use `gvt` to manage dependencies
-* `make updatedeps`: Update all dependencies
+* `make orphan-deps`: Checking for orphan dependencies
+* `make update-deps`: Update all dependencies
 * `make test`: Use ginkgo for tests
 * `make vet`: Run go vet tool for suspicious constructs

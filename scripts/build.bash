@@ -46,7 +46,9 @@ main() {
     set +e
     set -o pipefail
 
-    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    SOURCE="${BASH_SOURCE[0]}"
+    while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+    DIR="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
     rm -rf $DIR/pkg
     mkdir -p $DIR/pkg
 
