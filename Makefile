@@ -64,5 +64,5 @@ vet:
 		echo "and fix them if necessary before submitting the code for reviewal."; \
 		fi
 
-.PHONY: all build cov dist deps format generate test orphan-deps update-deps vet
+.PHONY: all build build-dist cov deps format generate test orphan-deps update-deps vet
 

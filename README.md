@@ -20,5 +20,5 @@ This is a placeholder for a base go project with opinionated Makefile.
 * `make deps`: Use `gvt` to manage dependencies
 * `make orphan-deps`: Checking for orphan dependencies
 * `make update-deps`: Update all dependencies
-* `make test`: Use ginkgo for tests
+* `make test`: Running tests
 * `make vet`: Run go vet tool for suspicious constructs
