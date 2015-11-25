@@ -2,7 +2,7 @@
 
 orphan_deps() {
     local imports=$(cd $DIR && go list -f '{{join .Imports " "}}' ./... | grep -v vendor)
-    local vendored_deps=" $(cd $DIR/vendor && find * -maxdepth 2 -mindepth 2 -type d -print) "
+    local vendored_deps=" $(cd $DIR && gvt list | cut -d ' ' -f 1 | sort ) "
     local orphan=""
     for dep in ${vendored_deps}; do
         if [[ "${imports}" != *"${dep}"* ]]; then
@@ -26,8 +26,6 @@ main() {
 
     #parse args
     ACTION=$1
-    #USED_PACKAGES=( $(cd $DIR && go list ./... | sort | uniq) )
-    #PM_PACKAGES=( $(cd $DIR && gvt list | cut -d ' ' -f 1 | sort | uniq) )
 
     case $1 in
         orphan) orphan_deps;;
