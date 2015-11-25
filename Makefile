@@ -8,53 +8,56 @@ GOTOOLS = github.com/mitchellh/gox \
 	  golang.org/x/tools/cmd/vet
 VETARGS?=-asmdecl -atomic -bool -buildtags -copylocks -methods \
 	 -nilfunc -printf -rangeloops -shift -structtags -unsafeptr
+
+USED_PACKAGES=$(shell go list ./... | sort | uniq)
+INTERNAL_PACKAGES=$(shell go list ./... | grep -v vendor | sort | uniq)
+PM_PACKAGES=$(gvt list | cut -d ' ' -f 1 | sort | uniq)
+
 BINARY_NAME=$(shell basename ${PWD})
-MAIN_PACKAGE=$(CURDIR)
+MAIN_PACKAGE="."
 
 all: format test build-dist
 
 build: generate
-	$(CURDIR)/scripts/build.bash $(BINARY_NAME) $(MAIN_PACKAGE) dev
+	@$(CURDIR)/scripts/build.bash $(BINARY_NAME) $(MAIN_PACKAGE) dev
 
-build-dist: check-format generate
-	$(CURDIR)/scripts/build.bash $(BINARY_NAME) $(MAIN_PACKAGE)
-
-check-format:
-	@echo "Checking format... "
-	test -z "$$(goimports -l . | grep -v vendor/ | tee /dev/stderr)"
-	@echo "Done checking format"
+build-dist: generate
+	@$(CURDIR)/scripts/build.bash $(BINARY_NAME) $(MAIN_PACKAGE)
 
 cov:
-	gocov test ./... | gocov-html > /tmp/coverage.html
-	open /tmp/coverage.html
+	@echo "--> Running test coverage"
+	@gocov test ./... | gocov-html > /tmp/coverage.html
+	@open /tmp/coverage.html
 
 clean:
-	find . -type f -name '.DS_Store' -delete
+	@find . -type f -name '.DS_Store' -delete
 
 deps:
-	echo "--> Installing build dependencies"
-	go get -v $(GOTOOLS)
-	gvt rebuild
+	@echo "--> Installing build dependencies"
+	@go get -v $(GOTOOLS)
+	@gvt rebuild
 
-format: deps
-	echo "--> Running go fmt"
-	go fmt $(PACKAGES)
+format:
+	@echo "--> Running go fmt"
+	@go fmt $(INTERNAL_PACKAGES)
 
 generate:
-	echo "--> Running generate"
-	go generate ./...
+	@echo "--> Running generate"
+	@go generate ./...
 
 test: deps
-	echo "--> Running Tests"
+	@echo "--> Running Tests"
 	$(MAKE) vet
-	ginkgo -r
+	@ginkgo -r
 
 updatedeps: deps
 	@echo "--> Updating dependencies"
 	@gvt update --all
 
 vet:
-	@echo "--> Running go tool vet $(VETARGS) ."
+	@echo "--> Rnning go lint"
+	@test -z "$$(golint ./... | tee /dev/stderr)"
+	@echo "--> Running go tool vet $(VETARGS) ./..."
 	@go tool vet $(VETARGS) . ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \

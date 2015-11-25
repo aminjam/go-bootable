@@ -11,10 +11,12 @@ This is a placeholder for a base go project with opinionated Makefile.
 * gopkg.in/matm/v1/gocov-html
 * golang.org/x/tools/cmd/vet
 
+### Adding a new package
+* `gvt fetch <PACKAGE>`: Use gvt fetch in place of `go get` with the same format
+
 ### Run
 * `make (all)`
 * `make build`: Dev Build
-* `gvt fetch <PACKAGE>`: Use gvt fetch in place of `go get` with the same format
 * `make cov`: Test coverage Report
 * `make dist`: Build all binaries for all combinatinos of (amd64 arm 386) Arch and (darwin freebsd linux windows) OS
 * `make deps`: Use `gvt` to manage dependencies
