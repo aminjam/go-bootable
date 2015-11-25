@@ -2,7 +2,7 @@
 
 orphan_deps() {
     local imports=$(cd $DIR && go list -f '{{join .Imports " "}}' ./... | grep -v vendor)
-    local vendored_deps=" $(cd $DIR && gvt list | cut -d ' ' -f 1 | sort ) "
+    local vendored_deps=" $(cd $DIR && gvt list -f '{{.Importpath}}' "
     local orphan=""
     for dep in ${vendored_deps}; do
         if [[ "${imports}" != *"${dep}"* ]]; then
